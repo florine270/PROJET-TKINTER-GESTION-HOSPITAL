@@ -1,17 +1,39 @@
 import tkinter as tk
+root = tk.Tk()
+root.withdraw()  # cache la racine par défaut utilisée par messagebox
+import tkinter as tk
 from tkinter import ttk, messagebox
-from connexion import USERNAME, PASSWORD
+from connexion import verifier_utilisateur_bdd
 from interfaces import ouvrir_interface_patients, ouvrir_interface_medecins, styliser
+
+print(">>> Chargement du fichier main.py")
+
 
 def interface_connexion():
     def verifier_connexion():
-        if champ_user.get() == USERNAME and champ_pass.get() == PASSWORD:
+        utilisateur = champ_user.get()
+        mot_de_passe = champ_pass.get()
+        if verifier_utilisateur_bdd(utilisateur, mot_de_passe):
             fenetre_connexion.destroy()
             ouvrir_menu_principal()
         else:
             messagebox.showerror("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
 
-    fenetre_connexion = tk.Tk()
+    def ouvrir_menu_principal():
+        menu = tk.Toplevel()
+        menu.title("Menu Principal")
+        menu.geometry("400x300")
+        menu.configure(bg="#f0f4f8")
+
+        tk.Label(menu, text="Menu Principal", font=("Arial", 20, "bold"), bg="#f0f4f8").pack(pady=20)
+        ttk.Button(menu, text="Gérer les Patients", command=ouvrir_interface_patients).pack(pady=10)
+        ttk.Button(menu, text="Gérer les Médecins", command=ouvrir_interface_medecins).pack(pady=10)
+        ttk.Button(menu, text="Quitter", command=menu.destroy).pack(pady=20)
+
+        menu.mainloop()
+
+    # Interface graphique de la fenêtre de connexion
+    fenetre_connexion = tk.Toplevel()
     fenetre_connexion.title("Connexion")
     fenetre_connexion.geometry("400x250")
     fenetre_connexion.configure(bg="#f7f9fc")
@@ -30,20 +52,9 @@ def interface_connexion():
     champ_pass.grid(row=1, column=1)
 
     ttk.Button(fenetre_connexion, text="Se connecter", command=verifier_connexion).pack(pady=20)
+
     fenetre_connexion.mainloop()
 
-def ouvrir_menu_principal():
-    menu = tk.Tk()
-    menu.title("Menu Principal")
-    menu.geometry("400x300")
-    menu.configure(bg="#f0f4f8")
-
-    tk.Label(menu, text="Menu Principal", font=("Arial", 20, "bold"), bg="#f0f4f8").pack(pady=20)
-    ttk.Button(menu, text="Gérer les Patients", command=ouvrir_interface_patients).pack(pady=10)
-    ttk.Button(menu, text="Gérer les Médecins", command=ouvrir_interface_medecins).pack(pady=10)
-    ttk.Button(menu, text="Quitter", command=menu.destroy).pack(pady=20)
-
-    menu.mainloop()
 
 # Point d'entrée
 if __name__ == "__main__":

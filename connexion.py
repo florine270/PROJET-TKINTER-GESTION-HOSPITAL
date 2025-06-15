@@ -20,7 +20,11 @@ def ecrire_csv(fichier, donnees):
         writer = csv.writer(f)
         writer.writerows(donnees)
 
+<<<<<<< HEAD
 #  Validation corrigée sans vérification d'âge
+=======
+# ✅ Validation corrigée sans vérification d'âge
+>>>>>>> 7f77bc1 (Modifs récentes)
 def valider_entrees(donnees, is_medecin=False):
     if any(not champ.strip() for champ in donnees):
         messagebox.showerror("Erreur", "Tous les champs doivent être remplis.")
@@ -48,7 +52,11 @@ def verifier_utilisateur_bdd(username, password):
         messagebox.showerror("Erreur MySQL", str(e))
         return False
 
+<<<<<<< HEAD
 #  Fonctions Patients MySQL
+=======
+# 🧬 Fonctions Patients MySQL
+>>>>>>> 7f77bc1 (Modifs récentes)
 def lire_patients_bdd():
     try:
         conn = mysql.connector.connect(
@@ -120,7 +128,11 @@ def modifier_patient_bdd(donnees):
     except Exception as e:
         messagebox.showerror("Erreur MySQL", str(e))
 
+<<<<<<< HEAD
 #  Fonctions Médecins MySQL
+=======
+# 🧬 Fonctions Médecins MySQL
+>>>>>>> 7f77bc1 (Modifs récentes)
 def lire_medecins_bdd():
     try:
         conn = mysql.connector.connect(
@@ -192,5 +204,4 @@ def modifier_medecin_bdd(donnees):
         conn.close()
     except Exception as e:
         messagebox.showerror("Erreur MySQL", str(e))
-
 

@@ -1,43 +1,29 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from connexion import lire_csv, ecrire_csv, valider_entrees, FILENAME_PATIENTS, FILENAME_MEDECINS
 from datetime import datetime
+from connexion import (
+    valider_entrees,
+    lire_patients_bdd,
+    ajouter_patient_bdd,
+    modifier_patient_bdd,
+    supprimer_patient_bdd,
+    lire_medecins_bdd,
+    ajouter_medecin_bdd,
+    modifier_medecin_bdd,
+    supprimer_medecin_bdd
+)
+
 def styliser():
     style = ttk.Style()
     style.theme_use('vista')
     style.configure('Treeview', rowheight=30)
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-from datetime import datetime
-
-
-
-def valider_entrees(donnees):
-
-    for i, val in enumerate(donnees):
-        if i != 6 and not val.strip():
-            messagebox.showerror("Erreur", "Tous les champs sauf 'Remarque' doivent être remplis.")
-            return False
-
-    date_naissance = donnees[3].strip()
-    if date_naissance == "jj/mm/aaaa" or not date_naissance:
-        messagebox.showerror("Erreur", "La date de naissance doit être renseignée au format jj/mm/aaaa.")
-        return False
-    try:
-        datetime.strptime(date_naissance, "%d/%m/%Y")
-    except ValueError:
-        messagebox.showerror("Erreur", "La date de naissance doit être au format jj/mm/aaaa.")
-        return False
-
-    return True
-
-
 def ouvrir_interface_patients():
     fenetre = tk.Toplevel()
     fenetre.title("Gestion des Patients")
     fenetre.geometry("900x600")
-    fenetre.configure(bg="#F3E8FF")  # soft lavender background
+    fenetre.configure(bg="#F3E8FF")
+
     styliser()
 
     colonnes = ["ID", "Nom", "Prénom", "Date de Naissance", "Sexe", "Adresse", "Remarque"]
@@ -46,12 +32,11 @@ def ouvrir_interface_patients():
     cadre_form = ttk.Frame(fenetre)
     cadre_form.pack(pady=10, padx=20)
 
-    # Add a background color and padding using a canvas or label
     form_bg = tk.Frame(cadre_form, bg="white", bd=2, relief="groove")
     form_bg.pack()
 
     for i, col in enumerate(colonnes):
-        label = ttk.Label(form_bg, text=col + " :", foreground="#333333", background="white")
+        label = ttk.Label(form_bg, text=col + " :", foreground="#333", background="white")
         label.grid(row=i, column=0, padx=10, pady=5, sticky="e")
 
         if col == "Sexe":
@@ -65,35 +50,27 @@ def ouvrir_interface_patients():
         champ.grid(row=i, column=1, padx=10, pady=5)
         champs.append(champ)
 
-    # Treeview styling
-    style = ttk.Style()
-    style.configure("Treeview", 
-                    background="white", 
-                    foreground="black", 
-                    rowheight=30, 
-                    fieldbackground="white")
-    style.map('Treeview', background=[('selected', '#CBA1E9')])
-    style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"), background="#D1B3FF", foreground="black")
-
     tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
     for col in colonnes:
         tableau.heading(col, text=col)
         tableau.column(col, width=120)
     tableau.pack(expand=True, fill="both", pady=10, padx=20)
-
     def charger():
         tableau.delete(*tableau.get_children())
-        for ligne in lire_csv(FILENAME_PATIENTS):
+        for ligne in lire_patients_bdd():
             tableau.insert("", "end", values=ligne)
 
     def ajouter():
         donnees = [champ.get() for champ in champs]
+        try:
+            donnees[3] = datetime.strptime(donnees[3], "%d/%m/%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Erreur", "Le format de la date doit être jj/mm/aaaa")
+            return
         if valider_entrees(donnees):
-            patients = lire_csv(FILENAME_PATIENTS)
-            patients.append(donnees)
-            ecrire_csv(FILENAME_PATIENTS, patients)
+            ajouter_patient_bdd(donnees)
             charger()
-            for champ in champs: 
+            for champ in champs:
                 champ.delete(0, tk.END)
 
     def remplir(event):
@@ -109,43 +86,49 @@ def ouvrir_interface_patients():
         if not selection:
             messagebox.showerror("Erreur", "Sélectionnez un patient.")
             return
-        nouvelles = [champ.get() for champ in champs]
-        if not valider_entrees(nouvelles):
+        donnees = [champ.get() for champ in champs]
+        try:
+            donnees[3] = datetime.strptime(donnees[3], "%d/%m/%Y").strftime("%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Erreur", "Le format de la date doit être jj/mm/aaaa")
             return
-        patients = lire_csv(FILENAME_PATIENTS)
-        patients[tableau.index(selection[0])] = nouvelles
-        ecrire_csv(FILENAME_PATIENTS, patients)
-        charger()
+        if valider_entrees(donnees):
+            modifier_patient_bdd(donnees)
+            charger()
 
     def supprimer():
         selection = tableau.selection()
         if not selection:
             messagebox.showerror("Erreur", "Sélectionnez un patient.")
             return
-        patients = lire_csv(FILENAME_PATIENTS)
-        del patients[tableau.index(selection[0])]
-        ecrire_csv(FILENAME_PATIENTS, patients)
+        patient_id = tableau.item(selection[0])["values"][0]
+        supprimer_patient_bdd(patient_id)
         charger()
-        for champ in champs: 
+        for champ in champs:
             champ.delete(0, tk.END)
 
     cadre_btns = ttk.Frame(fenetre)
     cadre_btns.pack(pady=15)
-    
-    for i, (label, command) in enumerate([("Ajouter", ajouter), ("Modifier", modifier), ("Supprimer", supprimer)]):
-        btn = ttk.Button(cadre_btns, text=label, command=command)
+
+    for i, (texte, action) in enumerate([
+        ("Ajouter", ajouter), ("Modifier", modifier), ("Supprimer", supprimer)
+    ]):
+        btn = ttk.Button(cadre_btns, text=texte, command=action)
         btn.grid(row=0, column=i, padx=10, ipadx=10, ipady=5)
+
+    btn_recharger = ttk.Button(cadre_btns, text="Recharger", command=charger)
+    btn_recharger.grid(row=0, column=3, padx=10, ipadx=10, ipady=5)
 
     tableau.bind("<<TreeviewSelect>>", remplir)
     charger()
-
 
 
 def ouvrir_interface_medecins():
     fenetre = tk.Toplevel()
     fenetre.title("Gestion des Médecins")
     fenetre.geometry("900x600")
-    fenetre.configure(bg="#E6F4EA")  # Vert doux
+    fenetre.configure(bg="#E6F4EA")
+
     styliser()
 
     colonnes = ["ID", "Nom", "Prénom", "Spécialité", "Téléphone", "Email", "Adresse"]
@@ -165,16 +148,6 @@ def ouvrir_interface_medecins():
         champ.grid(row=i, column=1, padx=10, pady=5)
         champs.append(champ)
 
-    style = ttk.Style()
-    style.configure("Treeview",
-                    background="white",
-                    foreground="black",
-                    rowheight=30,
-                    fieldbackground="white")
-    style.map('Treeview', background=[('selected', '#B6E1C2')])
-    style.configure("Treeview.Heading", font=("Segoe UI", 10, "bold"),
-                    background="#A8D5BA", foreground="black")
-
     tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
     for col in colonnes:
         tableau.heading(col, text=col)
@@ -183,22 +156,16 @@ def ouvrir_interface_medecins():
 
     def charger():
         tableau.delete(*tableau.get_children())
-        for ligne in lire_csv(FILENAME_MEDECINS):
+        for ligne in lire_medecins_bdd():
             tableau.insert("", "end", values=ligne)
 
-    # Fonction ajouter correctement placée
     def ajouter():
         donnees = [champ.get() for champ in champs]
-
-        if all(donnees):
-            medecins = lire_csv(FILENAME_MEDECINS)
-            medecins.append(donnees)
-            ecrire_csv(FILENAME_MEDECINS, medecins)
+        if valider_entrees(donnees, is_medecin=True):
+            ajouter_medecin_bdd(donnees)
             charger()
             for champ in champs:
                 champ.delete(0, tk.END)
-        else:
-            messagebox.showerror("Erreur", "Veuillez remplir tous les champs.")
 
     def remplir(event):
         selection = tableau.selection()
@@ -213,22 +180,18 @@ def ouvrir_interface_medecins():
         if not selection:
             messagebox.showerror("Erreur", "Sélectionnez un médecin.")
             return
-        nouvelles = [champ.get() for champ in champs]
-        if not valider_entrees(nouvelles, is_medecin=True):
-            return
-        medecins = lire_csv(FILENAME_MEDECINS)
-        medecins[tableau.index(selection[0])] = nouvelles
-        ecrire_csv(FILENAME_MEDECINS, medecins)
-        charger()
+        donnees = [champ.get() for champ in champs]
+        if valider_entrees(donnees, is_medecin=True):
+            modifier_medecin_bdd(donnees)
+            charger()
 
     def supprimer():
         selection = tableau.selection()
         if not selection:
             messagebox.showerror("Erreur", "Sélectionnez un médecin.")
             return
-        medecins = lire_csv(FILENAME_MEDECINS)
-        del medecins[tableau.index(selection[0])]
-        ecrire_csv(FILENAME_MEDECINS, medecins)
+        medecin_id = tableau.item(selection[0])["values"][0]
+        supprimer_medecin_bdd(medecin_id)
         charger()
         for champ in champs:
             champ.delete(0, tk.END)
@@ -241,6 +204,9 @@ def ouvrir_interface_medecins():
     ]):
         btn = ttk.Button(cadre_btns, text=texte, command=action)
         btn.grid(row=0, column=i, padx=10, ipadx=10, ipady=5)
+
+    btn_recharger = ttk.Button(cadre_btns, text="Recharger", command=charger)
+    btn_recharger.grid(row=0, column=3, padx=10, ipadx=10, ipady=5)
 
     tableau.bind("<<TreeviewSelect>>", remplir)
     charger()
