@@ -128,11 +128,7 @@ def modifier_patient_bdd(donnees):
     except Exception as e:
         messagebox.showerror("Erreur MySQL", str(e))
 
-<<<<<<< HEAD
-#  Fonctions Médecins MySQL
-=======
 # 🧬 Fonctions Médecins MySQL
->>>>>>> 7f77bc1 (Modifs récentes)
 def lire_medecins_bdd():
     try:
         conn = mysql.connector.connect(
@@ -205,3 +201,5 @@ def modifier_medecin_bdd(donnees):
     except Exception as e:
         messagebox.showerror("Erreur MySQL", str(e))
 
+
+#  test
