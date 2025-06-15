@@ -1,2 +1,18 @@
-# PROJET-TKINTER-GESTION-HOSPITAL
-Ce projet consiste à développer une application de bureau en Python utilisant la bibliothèque Tkinter pour gérer les principales activités administratives d’un hôpital. Il offre une interface graphique intuitive permettant au personnel de l’hôpital de gérer efficacement les patients, les médecins..
+
+# Gestion Hospitalière – Interface Tkinter
+
+Bienvenue sur l'application de bureau pour la gestion hospitalière développée en Python avec Tkinter.  
+Elle permet une gestion intuitive des patients, utilisateurs et services médicaux.
+
+##  Fonctionnalités
+
+- Authentification des utilisateurs
+- Ajout / modification / suppression de patients
+- Consultation des dossiers
+- Interface graphique fluide avec Tkinter
+
+## Lancer l'application
+
+bash
+python main.py
+
