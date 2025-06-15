@@ -201,5 +201,4 @@ def modifier_medecin_bdd(donnees):
     except Exception as e:
         messagebox.showerror("Erreur MySQL", str(e))
 
-
 #  test
