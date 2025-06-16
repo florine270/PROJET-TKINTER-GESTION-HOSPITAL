@@ -1,4 +1,4 @@
-# ❌ Fichiers temporaires Python
+#  Fichiers temporaires Python
 __pycache__
 *.pyc
 *.pyo
