@@ -1,0 +1,23 @@
+# ❌ Fichiers temporaires Python
+__pycache__
+*.pyc
+*.pyo
+
+#  Environnement virtuel
+env/
+venv/
+
+# Fichiers d’essai ou locaux
+*.sqlite3
+*.db
+
+# Secrets et paramètres
+.env
+
+#  Dossiers d’IDE
+.vscode/
+.idea/
+
+# Archives
+*.zip
+*.tar.gz
