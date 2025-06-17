@@ -1,0 +1,5 @@
+mysql-connector-python==9.3.0
+python-dotenv
+mysql-connector-python
+fpdf2
+tk

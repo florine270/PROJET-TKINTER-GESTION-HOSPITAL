@@ -15,7 +15,7 @@ from connexion import (
 
 def styliser():
     style = ttk.Style()
-    style.theme_use('vista')
+    style.theme_use('vista')  # Tu peux aussi essayer 'clam', 'xpnative' selon ton OS
     style.configure('Treeview', rowheight=30)
 
 def ouvrir_interface_patients():
@@ -23,13 +23,33 @@ def ouvrir_interface_patients():
     fenetre.title("Gestion des Patients")
     fenetre.geometry("900x600")
     fenetre.configure(bg="#F3E8FF")
-
     styliser()
+
+    # === Conteneur défilable ===
+    canevas = tk.Canvas(fenetre, bg="#F3E8FF")
+    scrollbar = ttk.Scrollbar(fenetre, orient="vertical", command=canevas.yview)
+    cadre_scrollable = ttk.Frame(canevas)
+
+    cadre_scrollable.bind(
+        "<Configure>",
+        lambda e: canevas.configure(scrollregion=canevas.bbox("all"))
+    )
+
+    canevas.create_window((0, 0), window=cadre_scrollable, anchor="nw")
+    canevas.configure(yscrollcommand=scrollbar.set)
+
+    canevas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    # === Barre de recherche ===
+    recherche_var = tk.StringVar()
+    champ_recherche = tk.Entry(cadre_scrollable, textvariable=recherche_var, width=40)
+    champ_recherche.pack(pady=10)
 
     colonnes = ["ID", "Nom", "Prénom", "Date de Naissance", "Sexe", "Adresse", "Remarque"]
     champs = []
 
-    cadre_form = ttk.Frame(fenetre)
+    cadre_form = ttk.Frame(cadre_scrollable)
     cadre_form.pack(pady=10, padx=20)
 
     form_bg = tk.Frame(cadre_form, bg="white", bd=2, relief="groove")
@@ -50,11 +70,24 @@ def ouvrir_interface_patients():
         champ.grid(row=i, column=1, padx=10, pady=5)
         champs.append(champ)
 
-    tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
+    tableau = ttk.Treeview(cadre_scrollable, columns=colonnes, show="headings")
     for col in colonnes:
         tableau.heading(col, text=col)
         tableau.column(col, width=120)
     tableau.pack(expand=True, fill="both", pady=10, padx=20)
+
+    def filtrer_tableau():
+        texte = recherche_var.get().lower()
+        for ligne in tableau.get_children():
+            valeurs = tableau.item(ligne)['values']
+            contenu = " ".join(str(v).lower() for v in valeurs)
+            if texte in contenu:
+                tableau.reattach(ligne, '', 'end')
+            else:
+                tableau.detach(ligne)
+
+    recherche_var.trace_add("write", lambda *args: filtrer_tableau())
+
     def charger():
         tableau.delete(*tableau.get_children())
         for ligne in lire_patients_bdd():
@@ -107,7 +140,7 @@ def ouvrir_interface_patients():
         for champ in champs:
             champ.delete(0, tk.END)
 
-    cadre_btns = ttk.Frame(fenetre)
+    cadre_btns = ttk.Frame(cadre_scrollable)
     cadre_btns.pack(pady=15)
 
     for i, (texte, action) in enumerate([
@@ -122,19 +155,38 @@ def ouvrir_interface_patients():
     tableau.bind("<<TreeviewSelect>>", remplir)
     charger()
 
-
 def ouvrir_interface_medecins():
     fenetre = tk.Toplevel()
     fenetre.title("Gestion des Médecins")
     fenetre.geometry("900x600")
     fenetre.configure(bg="#E6F4EA")
-
     styliser()
+
+    # === Conteneur défilable ===
+    canevas = tk.Canvas(fenetre, bg="#E6F4EA")
+    scrollbar = ttk.Scrollbar(fenetre, orient="vertical", command=canevas.yview)
+    cadre_scrollable = ttk.Frame(canevas)
+
+    cadre_scrollable.bind(
+        "<Configure>",
+        lambda e: canevas.configure(scrollregion=canevas.bbox("all"))
+    )
+
+    canevas.create_window((0, 0), window=cadre_scrollable, anchor="nw")
+    canevas.configure(yscrollcommand=scrollbar.set)
+
+    canevas.pack(side="left", fill="both", expand=True)
+    scrollbar.pack(side="right", fill="y")
+
+    # === Barre de recherche ===
+    recherche_var = tk.StringVar()
+    champ_recherche = tk.Entry(cadre_scrollable, textvariable=recherche_var, width=40)
+    champ_recherche.pack(pady=10)
 
     colonnes = ["ID", "Nom", "Prénom", "Spécialité", "Téléphone", "Email", "Adresse"]
     champs = []
 
-    cadre_form = ttk.Frame(fenetre)
+    cadre_form = ttk.Frame(cadre_scrollable)
     cadre_form.pack(pady=10, padx=20)
 
     form_bg = tk.Frame(cadre_form, bg="white", bd=2, relief="groove")
@@ -143,16 +195,27 @@ def ouvrir_interface_medecins():
     for i, col in enumerate(colonnes):
         label = ttk.Label(form_bg, text=col + " :", foreground="#2F4F2F", background="white")
         label.grid(row=i, column=0, padx=10, pady=5, sticky="e")
-
         champ = ttk.Entry(form_bg, width=40)
         champ.grid(row=i, column=1, padx=10, pady=5)
         champs.append(champ)
 
-    tableau = ttk.Treeview(fenetre, columns=colonnes, show="headings")
+    tableau = ttk.Treeview(cadre_scrollable, columns=colonnes, show="headings")
     for col in colonnes:
         tableau.heading(col, text=col)
         tableau.column(col, width=120)
     tableau.pack(expand=True, fill="both", pady=10, padx=20)
+
+    def filtrer_tableau():
+        texte = recherche_var.get().lower()
+        for ligne in tableau.get_children():
+            valeurs = tableau.item(ligne)['values']
+            contenu = " ".join(str(v).lower() for v in valeurs)
+            if texte in contenu:
+                tableau.reattach(ligne, '', 'end')
+            else:
+                tableau.detach(ligne)
+
+    recherche_var.trace_add("write", lambda *args: filtrer_tableau())
 
     def charger():
         tableau.delete(*tableau.get_children())
@@ -196,7 +259,7 @@ def ouvrir_interface_medecins():
         for champ in champs:
             champ.delete(0, tk.END)
 
-    cadre_btns = ttk.Frame(fenetre)
+    cadre_btns = ttk.Frame(cadre_scrollable)
     cadre_btns.pack(pady=15)
 
     for i, (texte, action) in enumerate([
