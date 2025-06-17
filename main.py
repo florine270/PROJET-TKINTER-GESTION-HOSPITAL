@@ -1,3 +1,4 @@
+# main.py
 import tkinter as tk
 from tkinter import ttk, messagebox
 from connexion import USERNAME, PASSWORD
@@ -45,6 +46,5 @@ def ouvrir_menu_principal():
 
     menu.mainloop()
 
-# Point d'entrée
 if __name__ == "__main__":
     interface_connexion()
