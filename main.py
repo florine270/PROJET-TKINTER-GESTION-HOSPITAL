@@ -16,7 +16,8 @@ def interface_connexion():
         utilisateur = champ_user.get()
         mot_de_passe = champ_pass.get()
         if verifier_utilisateur_bdd(utilisateur, mot_de_passe):
-            fenetre_connexion.destroy()
+            fenetre_connexion.withdraw()
+
             ouvrir_menu_principal()
         else:
             messagebox.showerror("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
