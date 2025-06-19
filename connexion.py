@@ -1,6 +1,8 @@
 import csv
 import os
+from tkinter import *
 from tkinter import messagebox
+from lang import t, switch_lang 
 
 # Fichiers CSV
 FILENAME_PATIENTS = "patients.csv"
@@ -23,12 +25,56 @@ def ecrire_csv(fichier, donnees):
 
 def valider_entrees(donnees, is_medecin=False):
     if any(not champ.strip() for champ in donnees):
-        messagebox.showerror("Erreur", "Tous les champs doivent être remplis.")
+        messagebox.showerror("Erreur", t("error_fields"))
         return False
     if not donnees[0].isdigit():
-        messagebox.showerror("Erreur", "L'ID doit être un nombre.")
+        messagebox.showerror("Erreur", t("error_id"))
         return False
     if not is_medecin and not donnees[3].isdigit():
-        messagebox.showerror("Erreur", "L'âge doit être un nombre.")
+        messagebox.showerror("Erreur", t("error_age"))
         return False
     return True
+
+# === Interface de Connexion ===
+
+def verifier_connexion():
+    utilisateur = entry_user.get()
+    mot_de_passe = entry_pass.get()
+    if utilisateur == USERNAME and mot_de_passe == PASSWORD:
+        messagebox.showinfo("Succès", t("success"))
+    else:
+        messagebox.showerror("Erreur", t("error_login"))
+
+def changer_langue():
+    switch_lang()
+    update_interface()
+
+def update_interface():
+    root.title(t("title"))
+    label_user.config(text=t("username"))
+    label_pass.config(text=t("password"))
+    btn_connexion.config(text=t("login"))
+    btn_langue.config(text=t("lang"))
+
+# Création de la fenêtre principale
+root = Tk()
+root.geometry("400x220")
+
+label_user = Label(root, text="")
+label_user.pack(pady=5)
+entry_user = Entry(root)
+entry_user.pack()
+
+label_pass = Label(root, text="")
+label_pass.pack(pady=5)
+entry_pass = Entry(root, show="*")
+entry_pass.pack()
+
+btn_connexion = Button(root, text="", command=verifier_connexion)
+btn_connexion.pack(pady=10)
+
+btn_langue = Button(root, text="", command=changer_langue)
+btn_langue.pack()
+
+update_interface()
+root.mainloop()
